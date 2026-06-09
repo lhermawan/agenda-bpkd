@@ -94,6 +94,27 @@ start_secure_session();
                         </div>
                     </div>
 
+                    <div class="nearest-agenda-card mb-3" id="nearestAgendaCard">
+                        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="nearest-agenda-icon"><i class="fa-solid fa-stopwatch"></i></div>
+                                <div>
+                                    <div class="small text-uppercase text-muted fw-bold mb-1">Hitung Mundur Agenda Terdekat</div>
+                                    <h5 class="fw-bold mb-1" id="nearestAgendaTitle">Memuat agenda...</h5>
+                                    <div class="small text-muted" id="nearestAgendaMeta">Sistem akan mencari agenda yang paling dekat dari waktu sekarang.</div>
+                                </div>
+                            </div>
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis" id="nearestVoiceStatus">Voice nonaktif</span>
+                        </div>
+                        <div class="nearest-countdown mt-3" id="nearestCountdownParts">
+                            <div><strong>--</strong><span>Hari</span></div>
+                            <div><strong>--</strong><span>Jam</span></div>
+                            <div><strong>--</strong><span>Menit</span></div>
+                            <div><strong>--</strong><span>Detik</span></div>
+                        </div>
+                        <div class="small text-muted mt-2" id="nearestAgendaHint">Voice otomatis akan berbunyi pada H-30 menit, H-10 menit, dan saat agenda mulai setelah tombol suara diaktifkan.</div>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0 agenda-table">
                             <thead class="table-light">
