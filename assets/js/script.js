@@ -13,7 +13,7 @@ const holidaysData = [
 
 const API_URL = 'api.php';
 let agendas = [];
-let audioEnabled = false;
+let audioEnabled = localStorage.getItem('bpkdAutoVoiceEnabled') === 'true';
 let currentFilter = 'today';
 let selectedDate = null;
 let viewDate = new Date();
@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderAuthState();
     loadSession();
+    renderAudioState();
+    bindAutoVoiceUnlock();
     loadAgendas();
 });
 
@@ -134,9 +136,11 @@ async function loadAgendas() {
         const data = await apiRequest('agendas');
         agendas = data.agendas || [];
         renderTable();
+        renderNearestCountdown();
     } catch (error) {
         agendas = [];
         renderTable();
+        renderNearestCountdown();
         showMessage(error.message, 'danger');
     }
 }
@@ -166,6 +170,7 @@ async function saveAgenda(form) {
         selectedDate = null;
         hideAgendaModal();
         renderTable();
+        renderNearestCountdown();
         showMessage(data.message || 'Agenda berhasil disimpan.', 'success');
     } catch (error) {
         showMessage(error.message, 'danger');
@@ -262,6 +267,7 @@ async function deleteAgenda(id) {
             }
             agendas = data.agendas || [];
             renderTable();
+            renderNearestCountdown();
             showMessage(data.message || 'Agenda berhasil dihapus.', 'success');
         } catch (error) {
             showMessage(error.message, 'danger');
@@ -359,28 +365,62 @@ function setFilterButtons(mode) {
     document.getElementById('btnAll')?.classList.toggle('active', mode === 'all');
 }
 
+function renderAudioState() {
+    const btn = document.getElementById('initAudioBtn');
+    const voiceStatus = document.getElementById('nearestVoiceStatus');
+
+    if (btn) {
+        btn.innerHTML = audioEnabled
+            ? '<i class="fa-solid fa-check-circle me-1"></i> Auto Voice Aktif'
+            : '<i class="fa-solid fa-volume-high me-1"></i> Aktifkan Suara';
+        btn.classList.toggle('btn-success', !audioEnabled);
+        btn.classList.toggle('btn-primary', audioEnabled);
+    }
+
+    if (voiceStatus) {
+        voiceStatus.className = audioEnabled
+            ? 'badge bg-success-subtle text-success-emphasis'
+            : 'badge bg-secondary-subtle text-secondary-emphasis';
+        voiceStatus.textContent = audioEnabled ? 'Voice otomatis aktif' : 'Voice nonaktif';
+    }
+}
+
+function bindAutoVoiceUnlock() {
+    const unlock = () => {
+        if (audioEnabled) {
+            window.speechSynthesis.resume();
+        }
+    };
+
+    document.addEventListener('click', unlock);
+    document.addEventListener('keydown', unlock);
+    document.addEventListener('touchstart', unlock, { passive: true });
+}
+
 function initAudio() {
     window.speechSynthesis.resume();
     const synth = window.speechSynthesis;
-    const utterThis = new SpeechSynthesisUtterance('Sistem notifikasi suara BPKD Ciamis aktif.');
+    const utterThis = new SpeechSynthesisUtterance('Sistem notifikasi suara otomatis BPKD Ciamis aktif.');
     utterThis.lang = 'id-ID';
     utterThis.volume = 1;
     synth.speak(utterThis);
 
     audioEnabled = true;
-    const btn = document.getElementById('initAudioBtn');
-    btn.innerHTML = '<i class="fa-solid fa-check-circle me-1"></i> Suara Aktif';
-    btn.classList.remove('btn-success');
-    btn.classList.add('btn-primary');
-    alert('Sistem suara berhasil diaktifkan!');
+    localStorage.setItem('bpkdAutoVoiceEnabled', 'true');
+    renderAudioState();
+    showMessage('Sistem suara otomatis berhasil diaktifkan. Voice akan berbunyi pada H-30 menit, H-10 menit, dan saat agenda mulai.', 'success');
 }
 
 function stopAudio() {
     window.speechSynthesis.cancel();
+    audioEnabled = false;
+    localStorage.setItem('bpkdAutoVoiceEnabled', 'false');
+    renderAudioState();
+    showMessage('Sistem suara otomatis dinonaktifkan.', 'warning');
 }
 
 function playAudio(nama, lokasi, peserta, msg) {
-    if(!audioEnabled) return;
+    if(!audioEnabled) return false;
     window.speechSynthesis.resume();
 
     const kalimatTambahan = (typeof msg === 'string' && msg.trim() !== '') ? ` ${msg}.` : '';
@@ -395,42 +435,116 @@ function playAudio(nama, lokasi, peserta, msg) {
     if(idVoice) utterThis.voice = idVoice;
 
     window.speechSynthesis.speak(utterThis);
+    return true;
 }
 
 function manualTrigger(id) {
     const agenda = agendas.find(a => Number(a.id) === Number(id));
-    if(agenda) playAudio(agenda.nama, agenda.lokasi, agenda.peserta, '');
+    if(agenda && !playAudio(agenda.nama, agenda.lokasi, agenda.peserta, '')) {
+        showMessage('Klik tombol Aktifkan Suara terlebih dahulu agar voice dapat diputar.', 'warning');
+    }
 }
 
 setInterval(() => {
+    processAutomaticVoiceNotifications();
+    renderNearestCountdown();
+    renderTable();
+}, 1000);
+
+
+function getAgendaDate(agenda) {
+    return new Date(String(agenda.waktu).replace(' ', 'T'));
+}
+
+function formatDurationParts(diffMs) {
+    const totalSeconds = Math.max(0, Math.floor(diffMs / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return { days, hours, minutes, seconds };
+}
+
+function getNearestUpcomingAgenda(now = new Date()) {
+    return agendas
+        .map(agenda => ({ ...agenda, agendaTime: getAgendaDate(agenda) }))
+        .filter(agenda => agenda.agendaTime >= now)
+        .sort((a, b) => a.agendaTime - b.agendaTime)[0] || null;
+}
+
+function renderNearestCountdown() {
+    const title = document.getElementById('nearestAgendaTitle');
+    const meta = document.getElementById('nearestAgendaMeta');
+    const partsEl = document.getElementById('nearestCountdownParts');
+    const hint = document.getElementById('nearestAgendaHint');
+    if (!title || !meta || !partsEl) return;
+
+    const now = new Date();
+    const nearest = getNearestUpcomingAgenda(now);
+
+    if (!nearest) {
+        title.textContent = 'Belum ada agenda mendatang';
+        meta.textContent = 'Tambahkan agenda baru atau ubah filter untuk melihat jadwal lain.';
+        partsEl.innerHTML = `
+            <div><strong>--</strong><span>Hari</span></div>
+            <div><strong>--</strong><span>Jam</span></div>
+            <div><strong>--</strong><span>Menit</span></div>
+            <div><strong>--</strong><span>Detik</span></div>`;
+        if (hint) hint.textContent = 'Voice otomatis menunggu agenda terdekat berikutnya.';
+        return;
+    }
+
+    const diffMs = nearest.agendaTime - now;
+    const duration = formatDurationParts(diffMs);
+    const formatTgl = nearest.agendaTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const formatJam = nearest.agendaTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+    title.textContent = nearest.nama;
+    meta.innerHTML = `<i class="fa-solid fa-calendar-clock text-primary me-1"></i>${formatTgl}, pukul ${formatJam} • <i class="fa-solid fa-location-dot text-danger me-1"></i>${escapeHtml(nearest.lokasi)}`;
+    partsEl.innerHTML = `
+        <div><strong>${duration.days}</strong><span>Hari</span></div>
+        <div><strong>${String(duration.hours).padStart(2, '0')}</strong><span>Jam</span></div>
+        <div><strong>${String(duration.minutes).padStart(2, '0')}</strong><span>Menit</span></div>
+        <div><strong>${String(duration.seconds).padStart(2, '0')}</strong><span>Detik</span></div>`;
+
+    if (hint) {
+        hint.textContent = audioEnabled
+            ? 'Voice otomatis siap berbunyi pada H-30 menit, H-10 menit, dan saat agenda mulai.'
+            : 'Klik tombol Aktifkan Suara agar voice otomatis dapat berbunyi pada H-30 menit, H-10 menit, dan saat agenda mulai.';
+    }
+}
+
+function processAutomaticVoiceNotifications() {
     const now = new Date();
 
     agendas.forEach(agenda => {
-        const diffMins = Math.round((new Date(agenda.waktu) - now) / 60000);
+        const secondsUntil = Math.floor((getAgendaDate(agenda) - now) / 1000);
 
-        if(diffMins === 30 && !agenda.notified30) {
-            playAudio(agenda.nama, agenda.lokasi, agenda.peserta, 'Akan dimulai dalam tiga puluh menit lagi');
-            markNotificationSent(agenda.id, '30');
+        if(secondsUntil <= 1800 && secondsUntil > 600 && !Number(agenda.notified30)) {
+            if (playAudio(agenda.nama, agenda.lokasi, agenda.peserta, 'Akan dimulai dalam tiga puluh menit lagi')) {
+                markNotificationSent(agenda.id, '30');
+            }
         }
-        if(diffMins === 10 && !agenda.notified10) {
-            playAudio(agenda.nama, agenda.lokasi, agenda.peserta, 'Akan dimulai dalam sepuluh menit lagi');
-            markNotificationSent(agenda.id, '10');
+        if(secondsUntil <= 600 && secondsUntil > 0 && !Number(agenda.notified10)) {
+            if (playAudio(agenda.nama, agenda.lokasi, agenda.peserta, 'Akan dimulai dalam sepuluh menit lagi')) {
+                markNotificationSent(agenda.id, '10');
+            }
         }
-        if(diffMins === 0 && !agenda.notified0) {
-            playAudio(agenda.nama, agenda.lokasi, agenda.peserta, 'Sekarang saatnya pelaksanaan agenda tersebut. Sedang berlangsung');
-            markNotificationSent(agenda.id, '0');
+        if(secondsUntil <= 0 && secondsUntil >= -1800 && !Number(agenda.notified0)) {
+            if (playAudio(agenda.nama, agenda.lokasi, agenda.peserta, 'Sekarang saatnya pelaksanaan agenda tersebut. Sedang berlangsung')) {
+                markNotificationSent(agenda.id, '0');
+            }
         }
     });
-
-    renderTable();
-}, 1000);
+}
 
 function renderTable() {
     const tbody = document.getElementById('agendaTableBody');
     if (!tbody) return;
 
     const filtered = agendas.filter(agenda => {
-        const agendaDate = new Date(agenda.waktu);
+        const agendaDate = getAgendaDate(agenda);
         if(selectedDate) {
             return agendaDate.getDate() === selectedDate.getDate()
                 && agendaDate.getMonth() === selectedDate.getMonth()
@@ -448,7 +562,7 @@ function renderTable() {
     }
 
     tbody.innerHTML = filtered.map(agenda => {
-        const agendaTime = new Date(agenda.waktu);
+        const agendaTime = getAgendaDate(agenda);
         const diffMs = agendaTime - new Date();
         let statusBadge = '';
 
