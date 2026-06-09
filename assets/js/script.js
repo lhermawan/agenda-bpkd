@@ -21,6 +21,7 @@ let adminSession = {
     loggedIn: Boolean(window.APP_SESSION?.loggedIn),
     adminName: window.APP_SESSION?.adminName || ''
 };
+const AGENDA_FINISHED_THRESHOLD_MS = 60 * 60 * 1000;
 
 window.speechSynthesis.onvoiceschanged = function() {
     window.speechSynthesis.getVoices();
@@ -466,6 +467,23 @@ function formatDurationParts(diffMs) {
     return { days, hours, minutes, seconds };
 }
 
+function getAgendaStatusBadge(agendaTime, now = new Date()) {
+    const diffMs = agendaTime - now;
+
+    if (diffMs <= -AGENDA_FINISHED_THRESHOLD_MS) {
+        return '<span class="badge bg-success px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>Sudah Selesai</span>';
+    }
+
+    if (diffMs < 0) {
+        return '<span class="badge bg-danger px-2 py-1"><i class="fa-solid fa-play me-1"></i>Sedang Berlangsung</span>';
+    }
+
+    const totalMin = Math.floor(diffMs / 60000);
+    const hours = Math.floor(totalMin / 60);
+    const mins = totalMin % 60;
+    return `<span class="text-primary fw-bold realtime-countdown"><i class="fa-solid fa-hourglass-half me-1"></i>${hours}j ${mins}m</span>`;
+}
+
 function getNearestUpcomingAgenda(now = new Date()) {
     return agendas
         .map(agenda => ({ ...agenda, agendaTime: getAgendaDate(agenda) }))
@@ -563,17 +581,7 @@ function renderTable() {
 
     tbody.innerHTML = filtered.map(agenda => {
         const agendaTime = getAgendaDate(agenda);
-        const diffMs = agendaTime - new Date();
-        let statusBadge = '';
-
-        if (diffMs < 0) {
-            statusBadge = '<span class="badge bg-danger px-2 py-1"><i class="fa-solid fa-play me-1"></i>Sedang Berlangsung</span>';
-        } else {
-            const totalMin = Math.floor(diffMs / 60000);
-            const hours = Math.floor(totalMin / 60);
-            const mins = totalMin % 60;
-            statusBadge = `<span class="text-primary fw-bold realtime-countdown"><i class="fa-solid fa-hourglass-half me-1"></i>${hours}j ${mins}m</span>`;
-        }
+        const statusBadge = getAgendaStatusBadge(agendaTime);
 
         const formatTgl = agendaTime.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
         const formatJam = agendaTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
