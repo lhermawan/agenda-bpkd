@@ -1,0 +1,125 @@
+:root {
+    --bpkd-blue: #0099df;
+    --bpkd-dark: #1e293b;
+    --bpkd-light: #f8fafc;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #f1f5f9;
+    color: var(--bpkd-dark);
+}
+
+.navbar-custom {
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 10px 20px;
+    border-bottom: 3px solid var(--bpkd-blue);
+}
+.navbar-brand img, .navbar-custom img {
+    height: 45px;
+    margin-right: 15px;
+    object-fit: contain;
+}
+.app-title {
+    font-weight: 700;
+    color: var(--bpkd-dark);
+    font-size: 1.2rem;
+    margin: 0;
+    line-height: 1.2;
+}
+.app-subtitle {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.btn-audio-init {
+    background-color: #10b981;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    animation: pulse 2s infinite;
+}
+.btn-audio-init.active {
+    background-color: var(--bpkd-blue);
+    animation: none;
+    pointer-events: none;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.card-custom {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    margin-bottom: 20px;
+}
+.card-header-custom {
+    background-color: transparent;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 15px 20px;
+    font-weight: 700;
+    color: var(--bpkd-dark);
+}
+
+.form-control:focus {
+    border-color: var(--bpkd-blue);
+    box-shadow: 0 0 0 0.25rem rgba(0, 153, 223, 0.25);
+}
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
+}
+.badge-status {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+    border-radius: 6px;
+}
+.badge-pending { background-color: #e2e8f0; color: #64748b; }
+.badge-done { background-color: #d1fae5; color: #059669; }
+
+.holiday-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+.holiday-item {
+    padding: 10px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.85rem;
+}
+.holiday-item:last-child { border-bottom: none; }
+.holiday-date { font-weight: 700; color: var(--bpkd-blue); }
+.holiday-name { color: #475569; }
+.text-important { color: #ef4444; font-weight: 600; }
+
+#holidayBanner { display: none; }
+
+/* Kalender Grid Style */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+.cal-header {
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+.cal-day {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.cal-day:hover { background: var(--bpkd-blue); color: white; }
+.cal-today { border: 2px solid var(--bpkd-blue); font-weight: bold; }
+.cal-holiday { background: #fee2e2; color: #dc2626; }
