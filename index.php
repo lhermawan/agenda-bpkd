@@ -65,44 +65,17 @@ start_secure_session();
                     </div>
                 </div>
 
-                <div class="card card-custom p-3" id="agendaCard">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0"><i class="fa-solid fa-pen-to-square text-primary me-1"></i> Input / Edit Agenda</h6>
-                        <span class="badge bg-warning-subtle text-warning-emphasis d-none" id="editBadge">Mode Edit</span>
-                    </div>
-
-                    <div class="alert alert-info small py-2" id="loginNotice">
-                        <i class="fa-solid fa-circle-info me-1"></i> Login admin diperlukan untuk menyimpan, mengedit, atau menghapus agenda.
-                        <a href="login.php" class="fw-bold ms-1">Login di sini</a>.
-                    </div>
-
-                    <form id="agendaForm">
-                        <input type="hidden" id="editId">
-                        <div class="mb-2">
-                            <label class="small fw-bold mb-1" for="nama">Judul Agenda</label>
-                            <input type="text" id="nama" class="form-control form-control-sm" placeholder="Masukkan judul agenda" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="small fw-bold mb-1" for="lokasi">Lokasi Agenda</label>
-                            <input type="text" id="lokasi" class="form-control form-control-sm" placeholder="Ruangan / Media Zoom" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="small fw-bold mb-1" for="peserta">Yang Menghadiri</label>
-                            <textarea id="peserta" class="form-control form-control-sm" rows="2" placeholder="Daftar pejabat / staf yang hadir" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="small fw-bold mb-1" for="waktu">Waktu Pelaksanaan</label>
-                            <input type="datetime-local" id="waktu" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold shadow-sm" id="saveAgendaBtn">
-                                <i class="fa-solid fa-floppy-disk me-1"></i> Simpan Agenda
-                            </button>
-                            <button type="button" class="btn btn-light border btn-sm fw-bold d-none" id="cancelEditBtn" onclick="resetAgendaForm()">
-                                Batal
+                <div class="card card-custom p-3 add-agenda-card">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="add-agenda-icon"><i class="fa-solid fa-calendar-plus"></i></div>
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-1">Kelola Agenda</h6>
+                            <p class="small text-muted mb-3">Tambah agenda baru melalui popup tanpa meninggalkan dashboard.</p>
+                            <button class="btn btn-primary btn-sm fw-bold w-100" id="addAgendaSidebarBtn" onclick="openAgendaModal('add')" type="button">
+                                <i class="fa-solid fa-plus me-1"></i> Tambah Agenda
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
 
@@ -110,9 +83,14 @@ start_secure_session();
                 <div class="card card-custom p-3 h-100">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                         <h6 class="fw-bold mb-0"><i class="fa-solid fa-table-list text-primary me-1"></i> Monitoring Dashboard</h6>
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-sm btn-toggle active" id="btnToday" onclick="filterAgenda('today')" type="button">Tampil Hari Ini Saja</button>
-                            <button class="btn btn-sm btn-toggle" id="btnAll" onclick="filterAgenda('all')" type="button">Tampil Semua Database</button>
+                        <div class="d-flex gap-2 flex-wrap justify-content-end">
+                            <button class="btn btn-sm btn-primary fw-bold" id="addAgendaTopBtn" onclick="openAgendaModal('add')" type="button">
+                                <i class="fa-solid fa-plus me-1"></i> Tambah Agenda
+                            </button>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-toggle active" id="btnToday" onclick="filterAgenda('today')" type="button">Tampil Hari Ini Saja</button>
+                                <button class="btn btn-sm btn-toggle" id="btnAll" onclick="filterAgenda('all')" type="button">Tampil Semua Database</button>
+                            </div>
                         </div>
                     </div>
 
@@ -129,6 +107,59 @@ start_secure_session();
                             <tbody id="agendaTableBody"></tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="agendaModal" tabindex="-1" aria-labelledby="agendaModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content agenda-modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="agendaModalTitle">
+                            <i class="fa-solid fa-pen-to-square text-primary me-1"></i> Tambah Agenda
+                        </h5>
+                        <p class="text-muted small mb-0" id="agendaModalSubtitle">Isi detail agenda kerja yang akan ditampilkan pada dashboard.</p>
+                    </div>
+                    <span class="badge bg-warning-subtle text-warning-emphasis d-none ms-auto me-3" id="editBadge">Mode Edit</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <div class="alert alert-info small py-2" id="loginNotice">
+                        <i class="fa-solid fa-circle-info me-1"></i> Login admin diperlukan untuk menyimpan, mengedit, atau menghapus agenda.
+                        <a href="login.php" class="fw-bold ms-1">Login di sini</a>.
+                    </div>
+
+                    <form id="agendaForm">
+                        <input type="hidden" id="editId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small fw-bold mb-1" for="nama">Judul Agenda</label>
+                                <input type="text" id="nama" class="form-control" placeholder="Masukkan judul agenda" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold mb-1" for="lokasi">Lokasi Agenda</label>
+                                <input type="text" id="lokasi" class="form-control" placeholder="Ruangan / Media Zoom" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="small fw-bold mb-1" for="peserta">Yang Menghadiri</label>
+                                <textarea id="peserta" class="form-control" rows="3" placeholder="Daftar pejabat / staf yang hadir" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="small fw-bold mb-1" for="waktu">Waktu Pelaksanaan</label>
+                                <input type="datetime-local" id="waktu" class="form-control" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light border fw-bold" id="cancelEditBtn" data-bs-dismiss="modal" onclick="resetAgendaForm()">
+                        Batal
+                    </button>
+                    <button type="submit" form="agendaForm" class="btn btn-primary fw-bold shadow-sm" id="saveAgendaBtn">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Simpan Agenda
+                    </button>
                 </div>
             </div>
         </div>
