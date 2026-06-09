@@ -1,7 +1,6 @@
 :root {
     --bpkd-blue: #0099df;
     --bpkd-dark: #1e293b;
-    --bpkd-light: #f8fafc;
 }
 
 body {
@@ -12,57 +11,26 @@ body {
 
 .navbar-custom {
     background-color: #ffffff;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    padding: 10px 20px;
     border-bottom: 3px solid var(--bpkd-blue);
 }
-.navbar-brand img, .navbar-custom img {
+.navbar-brand img,
+.navbar-custom img {
     height: 45px;
-    margin-right: 15px;
     object-fit: contain;
 }
 .app-title {
-    font-weight: 700;
-    color: var(--bpkd-dark);
-    font-size: 1.2rem;
-    margin: 0;
-    line-height: 1.2;
+    font-size: 1.15rem;
 }
 .app-subtitle {
-    font-size: 0.8rem;
-    color: #64748b;
-}
-
-.btn-audio-init {
-    background-color: #10b981;
-    color: white;
-    font-weight: 600;
-    border-radius: 8px;
-    animation: pulse 2s infinite;
-}
-.btn-audio-init.active {
-    background-color: var(--bpkd-blue);
-    animation: none;
-    pointer-events: none;
-}
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
 }
 
 .card-custom {
-    border: none;
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-    margin-bottom: 20px;
-}
-.card-header-custom {
-    background-color: transparent;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 15px 20px;
-    font-weight: 700;
-    color: var(--bpkd-dark);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: none;
+    background: #fff;
 }
 
 .form-control:focus {
@@ -72,54 +40,121 @@ body {
 .table-hover tbody tr:hover {
     background-color: #f8fafc;
 }
-.badge-status {
-    font-size: 0.75rem;
-    padding: 5px 8px;
-    border-radius: 6px;
+.agenda-table {
+    font-size: 0.9rem;
 }
-.badge-pending { background-color: #e2e8f0; color: #64748b; }
-.badge-done { background-color: #d1fae5; color: #059669; }
-
-.holiday-list {
-    max-height: 250px;
-    overflow-y: auto;
-}
-.holiday-item {
-    padding: 10px;
-    border-bottom: 1px solid #f1f5f9;
+.realtime-countdown {
     font-size: 0.85rem;
 }
-.holiday-item:last-child { border-bottom: none; }
-.holiday-date { font-weight: 700; color: var(--bpkd-blue); }
-.holiday-name { color: #475569; }
-.text-important { color: #ef4444; font-weight: 600; }
 
-#holidayBanner { display: none; }
-
-/* Kalender Grid Style */
-.calendar-grid {
+.cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
-    margin-top: 10px;
 }
-.cal-header {
+.cal-head {
     font-weight: bold;
     text-align: center;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #64748b;
+    padding-bottom: 5px;
 }
 .cal-day {
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f1f5f9;
-    border-radius: 6px;
-    font-size: 0.85rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-size: 0.8rem;
     cursor: pointer;
+    border-radius: 6px;
     transition: 0.2s;
 }
-.cal-day:hover { background: var(--bpkd-blue); color: white; }
-.cal-today { border: 2px solid var(--bpkd-blue); font-weight: bold; }
-.cal-holiday { background: #fee2e2; color: #dc2626; }
+.cal-day:hover {
+    background: #e0f2fe;
+    border-color: var(--bpkd-blue);
+}
+.cal-today {
+    border: 2px solid var(--bpkd-blue) !important;
+    color: var(--bpkd-blue) !important;
+    font-weight: bold;
+    background: #f0f9ff;
+}
+.cal-holiday {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    font-weight: bold;
+    border-color: #fca5a5;
+}
+.cal-important {
+    background: #fffbeb !important;
+    color: #d97706 !important;
+    font-weight: bold;
+    border-color: #fcd34d;
+}
+.cal-selected {
+    outline: 3px solid rgba(0, 153, 223, 0.25);
+    outline-offset: 1px;
+}
+#dateInfo {
+    min-height: 55px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.85rem;
+}
+
+.btn-toggle {
+    background: white;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    font-weight: 500;
+}
+.btn-toggle.active {
+    background-color: var(--bpkd-blue);
+    color: white;
+    border-color: var(--bpkd-blue);
+}
+
+.login-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top left, rgba(0, 153, 223, 0.18), transparent 35%),
+        linear-gradient(135deg, #e0f2fe 0%, #f8fafc 45%, #ffffff 100%);
+}
+.login-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+.login-panel {
+    width: 100%;
+    max-width: 460px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 34px;
+    border-top: 5px solid var(--bpkd-blue);
+}
+.login-logo {
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+}
+.login-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--bpkd-dark);
+    margin-bottom: 6px;
+}
+.login-form .input-group-text {
+    background: #eff6ff;
+    color: var(--bpkd-blue);
+    border-color: #dbeafe;
+}
+.login-form .form-control {
+    border-color: #dbeafe;
+}
