@@ -8,8 +8,8 @@ declare(strict_types=1);
 const DB_HOST = '127.0.0.1';
 const DB_PORT = '3306';
 const DB_NAME = 'agenda_bpkd';
-const DB_USER = 'root';
-const DB_PASS = '';
+const DB_USER = 'adminabsensi';
+const DB_PASS = 'dI2@5O[)N8`v';
 
 function config_value(string $key, string $default): string
 {
