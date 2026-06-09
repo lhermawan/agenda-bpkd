@@ -93,11 +93,16 @@ function renderAuthState() {
     const loginPageBtn = document.getElementById('loginPageBtn');
     const loginNotice = document.getElementById('loginNotice');
     const agendaForm = document.getElementById('agendaForm');
+    const addAgendaButtons = document.querySelectorAll('#addAgendaSidebarBtn, #addAgendaTopBtn');
 
     adminBadge?.classList.toggle('d-none', !adminSession.loggedIn);
     logoutBtn?.classList.toggle('d-none', !adminSession.loggedIn);
     loginPageBtn?.classList.toggle('d-none', adminSession.loggedIn);
     loginNotice?.classList.toggle('d-none', adminSession.loggedIn);
+    addAgendaButtons.forEach(button => {
+        button.disabled = !adminSession.loggedIn;
+        button.title = adminSession.loggedIn ? 'Tambah agenda baru' : 'Login admin diperlukan untuk tambah agenda';
+    });
 
     if (adminName) {
         adminName.textContent = adminSession.adminName || 'Admin';
@@ -159,6 +164,7 @@ async function saveAgenda(form) {
         form.reset();
         resetAgendaForm();
         selectedDate = null;
+        hideAgendaModal();
         renderTable();
         showMessage(data.message || 'Agenda berhasil disimpan.', 'success');
     } catch (error) {
@@ -180,6 +186,30 @@ async function updateAgenda(id, payload) {
     return data;
 }
 
+function openAgendaModal(mode = 'add') {
+    if (!adminSession.loggedIn) {
+        showMessage('Silakan login sebagai admin untuk menambah agenda.', 'warning');
+        return;
+    }
+
+    if (mode !== 'edit') {
+        resetAgendaForm();
+    }
+
+    const modalEl = document.getElementById('agendaModal');
+    if (!modalEl) return;
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    document.getElementById('nama')?.focus();
+}
+
+function hideAgendaModal() {
+    const modalEl = document.getElementById('agendaModal');
+    if (!modalEl) return;
+
+    bootstrap.Modal.getInstance(modalEl)?.hide();
+}
+
 function editAgenda(id) {
     if (!adminSession.loggedIn) {
         showMessage('Silakan login sebagai admin untuk mengedit agenda.', 'warning');
@@ -195,17 +225,22 @@ function editAgenda(id) {
     document.getElementById('peserta').value = agenda.peserta;
     document.getElementById('waktu').value = agenda.waktu;
     document.getElementById('editBadge')?.classList.remove('d-none');
-    document.getElementById('cancelEditBtn')?.classList.remove('d-none');
+    document.getElementById('agendaModalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-primary me-1"></i> Edit Agenda';
+    document.getElementById('agendaModalSubtitle').textContent = 'Perbarui detail agenda yang sudah tersimpan.';
     document.getElementById('saveAgendaBtn').innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Update Agenda';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    openAgendaModal('edit');
 }
 
 function resetAgendaForm() {
     document.getElementById('agendaForm')?.reset();
     document.getElementById('editId').value = '';
     document.getElementById('editBadge')?.classList.add('d-none');
-    document.getElementById('cancelEditBtn')?.classList.add('d-none');
+    const modalTitle = document.getElementById('agendaModalTitle');
+    const modalSubtitle = document.getElementById('agendaModalSubtitle');
     const saveBtn = document.getElementById('saveAgendaBtn');
+
+    if (modalTitle) modalTitle.innerHTML = '<i class="fa-solid fa-pen-to-square text-primary me-1"></i> Tambah Agenda';
+    if (modalSubtitle) modalSubtitle.textContent = 'Isi detail agenda kerja yang akan ditampilkan pada dashboard.';
     if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Simpan Agenda';
 }
 

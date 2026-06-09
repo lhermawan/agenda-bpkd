@@ -158,3 +158,29 @@ body {
 .login-form .form-control {
     border-color: #dbeafe;
 }
+
+.add-agenda-card {
+    border-top: 4px solid var(--bpkd-blue);
+}
+.add-agenda-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: var(--bpkd-blue);
+    background: #e0f2fe;
+}
+.agenda-modal-content {
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+}
+.agenda-modal-content .modal-header,
+.agenda-modal-content .modal-body,
+.agenda-modal-content .modal-footer {
+    padding-left: 28px;
+    padding-right: 28px;
+}
