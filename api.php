@@ -115,6 +115,46 @@ try {
         json_response(['success' => true, 'message' => 'Agenda berhasil disimpan.', 'agendas' => fetch_agendas()], 201);
     }
 
+
+    if ($action === 'agendas' && $method === 'PUT') {
+        require_admin();
+        $id = (int) ($_GET['id'] ?? 0);
+        $data = request_data();
+        $nama = trim((string) ($data['nama'] ?? ''));
+        $lokasi = trim((string) ($data['lokasi'] ?? ''));
+        $peserta = trim((string) ($data['peserta'] ?? ''));
+        $waktu = trim((string) ($data['waktu'] ?? ''));
+
+        if ($id < 1) {
+            json_response(['success' => false, 'message' => 'ID agenda tidak valid.'], 422);
+        }
+
+        if ($nama === '' || $lokasi === '' || $peserta === '' || !valid_datetime($waktu)) {
+            json_response(['success' => false, 'message' => 'Data agenda belum lengkap atau format waktu tidak valid.'], 422);
+        }
+
+        $stmt = db()->prepare(
+            'UPDATE agendas
+             SET nama = :nama,
+                 lokasi = :lokasi,
+                 peserta = :peserta,
+                 waktu = :waktu,
+                 notified30 = 0,
+                 notified10 = 0,
+                 notified0 = 0
+             WHERE id = :id'
+        );
+        $stmt->execute([
+            ':nama' => $nama,
+            ':lokasi' => $lokasi,
+            ':peserta' => $peserta,
+            ':waktu' => str_replace('T', ' ', $waktu) . ':00',
+            ':id' => $id,
+        ]);
+
+        json_response(['success' => true, 'message' => 'Agenda berhasil diperbarui.', 'agendas' => fetch_agendas()]);
+    }
+
     if ($action === 'agendas' && $method === 'DELETE') {
         require_admin();
         $id = (int) ($_GET['id'] ?? 0);

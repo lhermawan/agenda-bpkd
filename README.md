@@ -18,7 +18,7 @@ Aplikasi agenda berbasis PHP, MySQL, dan JavaScript untuk menampilkan daftar age
    - `MYSQL_USER` bawaan `root`
    - `MYSQL_PASSWORD` bawaan kosong
 
-3. Akses aplikasi melalui `index.php`.
+3. Akses aplikasi melalui `index.php`; halaman login admin tersedia di `login.php`.
 
 ## Login Admin Awal
 
